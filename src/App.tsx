@@ -1,5 +1,5 @@
 // src/App.tsx
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Task, NewTaskFormData } from './types';
 import { initialTasks, TODAY_DATE } from './data';
 import TaskCard from './components/TaskCard';
@@ -105,10 +105,6 @@ function App() {
     if (confirm('Are you sure you want to delete this task?')) {
       setTasks(tasks.filter(task => task.id !== taskId));
     }
-  };
-
-  const handleDateChange = (newDate: string) => {
-    setSelectedDate(newDate);
   };
 
   const handlePreviousDay = () => {

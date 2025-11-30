@@ -1,5 +1,5 @@
 // src/components/NewTaskSheet.tsx
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { DayOfWeek, MonthlyPattern, NewTaskFormData, Task } from '../types';
 import DayOfWeekChips from './DayOfWeekChips';
 
