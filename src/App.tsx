@@ -1,5 +1,5 @@
 // src/App.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Task, NewTaskFormData } from './types';
 import { initialTasks, TODAY_DATE } from './data';
 import TaskCard from './components/TaskCard';
@@ -7,12 +7,36 @@ import NewTaskSheet from './components/NewTaskSheet';
 import DateHeader from './components/DateHeader';
 import './styles.css';
 
+const STORAGE_KEY = 'chore-app-tasks';
+
+// Load tasks from localStorage or use initial tasks
+const loadTasks = (): Task[] => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (error) {
+    console.error('Error loading tasks from localStorage:', error);
+  }
+  return initialTasks;
+};
+
 function App() {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [tasks, setTasks] = useState<Task[]>(loadTasks);
   const [selectedDate, setSelectedDate] = useState<string>(TODAY_DATE);
   const [isNewTaskSheetOpen, setIsNewTaskSheetOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [highlightedTaskId, setHighlightedTaskId] = useState<string | null>(null);
+
+  // Save tasks to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    } catch (error) {
+      console.error('Error saving tasks to localStorage:', error);
+    }
+  }, [tasks]);
 
   // Filter tasks for the selected date
   const filteredTasks = tasks.filter(task => task.date === selectedDate);
