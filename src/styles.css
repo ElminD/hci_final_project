@@ -212,6 +212,10 @@ body {
   cursor: pointer;
   padding: 0;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
 .task-checkbox:hover .radio-circle {
@@ -220,6 +224,24 @@ body {
 
 .task-checkbox:active {
   transform: scale(0.95);
+}
+
+.checkbox-label-text {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.task-checkbox:hover .checkbox-label-text {
+  color: var(--accent-color);
+}
+
+.task-card.completed .checkbox-label-text {
+  color: var(--accent-color);
 }
 
 .radio-circle {
@@ -434,6 +456,32 @@ body {
 
 .day-chip:not(.readonly):active {
   transform: scale(0.95);
+}
+
+/* Category Filter */
+.category-filter {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  overflow-x: auto;
+  background-color: var(--card-white);
+  border-bottom: 1px solid var(--border-color);
+  scrollbar-width: none; /* Firefox */
+}
+
+.category-filter::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+.category-filter .category-chip {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.category-filter .category-chip.active {
+  background-color: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
 }
 
 /* Floating Action Button */
@@ -747,6 +795,218 @@ body {
 .task-list::-webkit-scrollbar-thumb:hover,
 .sheet-content::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
+}
+
+/* Error States */
+.text-input.error,
+.date-input.error,
+.select-input.error,
+.textarea-input.error {
+  border-color: var(--overdue-red);
+}
+
+.text-input.error:focus,
+.date-input.error:focus,
+.select-input.error:focus,
+.textarea-input.error:focus {
+  border-color: var(--overdue-red);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.error-message {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--overdue-red);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.error-message::before {
+  content: '⚠';
+  font-size: 14px;
+}
+
+/* Notification Preview */
+.notification-preview-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 400;
+  animation: fadeIn 0.3s;
+}
+
+.notification-preview-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 380px;
+  max-width: 90vw;
+  max-height: 90vh;
+  background-color: var(--card-white);
+  border-radius: 16px;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  animation: scaleIn 0.3s ease-out;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.notification-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.notification-preview-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.close-preview-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.close-preview-button:hover {
+  background-color: var(--background-gray);
+  color: var(--text-primary);
+}
+
+.notification-preview-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.preview-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.preview-section {
+  margin-bottom: 28px;
+}
+
+.preview-section:last-child {
+  margin-bottom: 0;
+}
+
+.preview-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+/* Mobile Notification Styles */
+.mobile-notification {
+  border-radius: 12px;
+  border-left: 4px solid;
+  padding: 12px 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+.notification-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.notification-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.notification-app-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-app-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.notification-time {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.2;
+}
+
+.notification-body {
+  margin-bottom: 8px;
+}
+
+.notification-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.notification-text {
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.notification-footer {
+  display: flex;
+  gap: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.notification-category {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+
+.preview-button:hover {
+  color: var(--accent-color);
 }
 
 /* Responsive adjustments */

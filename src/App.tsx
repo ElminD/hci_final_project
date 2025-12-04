@@ -5,6 +5,7 @@ import { initialTasks, TODAY_DATE } from './data';
 import TaskCard from './components/TaskCard';
 import NewTaskSheet from './components/NewTaskSheet';
 import DateHeader from './components/DateHeader';
+import CategoryFilter from './components/CategoryFilter';
 import './styles.css';
 
 const STORAGE_KEY = 'chore-app-tasks';
@@ -28,6 +29,7 @@ function App() {
   const [isNewTaskSheetOpen, setIsNewTaskSheetOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [highlightedTaskId, setHighlightedTaskId] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Save tasks to localStorage whenever they change
   useEffect(() => {
@@ -38,8 +40,17 @@ function App() {
     }
   }, [tasks]);
 
-  // Filter tasks for the selected date
-  const filteredTasks = tasks.filter(task => task.date === selectedDate);
+  // Get all unique categories from all tasks
+  const allCategories = Array.from(
+    new Set(tasks.flatMap(task => task.categoryTags))
+  ).sort();
+
+  // Filter tasks for the selected date and category
+  const filteredTasks = tasks.filter(task => {
+    const matchesDate = task.date === selectedDate;
+    const matchesCategory = !selectedCategory || task.categoryTags.includes(selectedCategory);
+    return matchesDate && matchesCategory;
+  });
 
   const handleSaveTask = (formData: NewTaskFormData) => {
     if (editingTask) {
@@ -162,6 +173,13 @@ function App() {
           todayDate={TODAY_DATE}
           onPreviousDay={handlePreviousDay}
           onNextDay={handleNextDay}
+        />
+
+        {/* Category Filter */}
+        <CategoryFilter
+          categories={allCategories}
+          selectedCategory={selectedCategory}
+          onCategorySelect={setSelectedCategory}
         />
 
         {/* Task List */}

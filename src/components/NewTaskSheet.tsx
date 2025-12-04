@@ -12,6 +12,14 @@ interface NewTaskSheetProps {
 
 const CATEGORY_OPTIONS = ['Cleaning', 'Errand', 'Work', 'Study', 'Personal', 'Home', 'Other'];
 
+interface ValidationErrors {
+  title?: string;
+  date?: string;
+  completionTimeGoal?: string;
+  url?: string;
+  categoryTags?: string;
+}
+
 function NewTaskSheet({ selectedDate, editingTask, onSave, onCancel }: NewTaskSheetProps) {
   const [formData, setFormData] = useState<NewTaskFormData>({
     title: editingTask?.title || '',
@@ -27,8 +35,82 @@ function NewTaskSheet({ selectedDate, editingTask, onSave, onCancel }: NewTaskSh
     defaultSnoozeMinutes: editingTask?.defaultSnoozeMinutes || null,
   });
 
+  const [errors, setErrors] = useState<ValidationErrors>({});
   const [voiceStatus, setVoiceStatus] = useState<'idle' | 'listening' | 'transcribed'>('idle');
   const [voiceTranscript, setVoiceTranscript] = useState('');
+
+  // Validation helper functions
+  const validateTitle = (title: string): string | undefined => {
+    if (!title.trim()) {
+      return 'Task name is required';
+    }
+    if (title.trim().length > 100) {
+      return 'Task name must be less than 100 characters';
+    }
+    return undefined;
+  };
+
+  const validateDate = (date: string): string | undefined => {
+    if (!date) {
+      return 'Date is required';
+    }
+    const today = new Date().toISOString().split('T')[0];
+    if (date < today) {
+      return 'Cannot schedule tasks in the past';
+    }
+    return undefined;
+  };
+
+  const validateTime = (time: string): string | undefined => {
+    if (!time.trim()) {
+      return 'Completion time goal is required';
+    }
+    // Check for basic time format (e.g., "7:00 PM", "12:30 AM", "9:15 PM")
+    const timeRegex = /^(0?[1-9]|1[0-2]):[0-5][0-9]\s?(AM|PM)$/i;
+    if (!timeRegex.test(time.trim())) {
+      return 'Time must be in format "H:MM AM/PM" (e.g., "7:00 PM")';
+    }
+    return undefined;
+  };
+
+  const validateUrl = (url: string): string | undefined => {
+    if (!url.trim()) {
+      return undefined; // URL is optional
+    }
+    try {
+      new URL(url);
+      return undefined;
+    } catch {
+      return 'Please enter a valid URL (e.g., https://example.com)';
+    }
+  };
+
+  const validateCategoryTags = (tags: string[]): string | undefined => {
+    if (tags.length === 0) {
+      return 'Please select at least one category';
+    }
+    return undefined;
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: ValidationErrors = {
+      title: validateTitle(formData.title),
+      date: validateDate(formData.date),
+      completionTimeGoal: validateTime(formData.completionTimeGoal),
+      url: validateUrl(formData.url),
+      categoryTags: validateCategoryTags(formData.categoryTags),
+    };
+
+    // Remove undefined errors
+    Object.keys(newErrors).forEach(key => {
+      if (newErrors[key as keyof ValidationErrors] === undefined) {
+        delete newErrors[key as keyof ValidationErrors];
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleVoiceInput = () => {
     setVoiceStatus('listening');
@@ -39,6 +121,8 @@ function NewTaskSheet({ selectedDate, editingTask, onSave, onCancel }: NewTaskSh
       setVoiceTranscript(sampleTranscript);
       setVoiceStatus('transcribed');
       setFormData({ ...formData, title: sampleTranscript });
+      // Clear title error when voice input is used
+      setErrors({ ...errors, title: undefined });
 
       setTimeout(() => {
         setVoiceStatus('idle');
@@ -91,12 +175,19 @@ function NewTaskSheet({ selectedDate, editingTask, onSave, onCancel }: NewTaskSh
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.title.trim()) {
-      alert('Please enter a task name');
+    if (!validateForm()) {
       return;
     }
 
     onSave(formData);
+  };
+
+  // Helper to update form data and clear related error
+  const updateFormData = (updates: Partial<NewTaskFormData>, errorKey?: keyof ValidationErrors) => {
+    setFormData({ ...formData, ...updates });
+    if (errorKey) {
+      setErrors({ ...errors, [errorKey]: undefined });
+    }
   };
 
   return (
@@ -122,10 +213,10 @@ function NewTaskSheet({ selectedDate, editingTask, onSave, onCancel }: NewTaskSh
               <input
                 id="title"
                 type="text"
-                className="text-input"
+                className={`text-input ${errors.title ? 'error' : ''}`}
                 placeholder="Walk the dog"
                 value={formData.title}
-                onChange={e => setFormData({ ...formData, title: e.target.value })}
+                onChange={e => updateFormData({ title: e.target.value }, 'title')}
               />
               <button
                 type="button"
@@ -136,6 +227,7 @@ function NewTaskSheet({ selectedDate, editingTask, onSave, onCancel }: NewTaskSh
                 🎤
               </button>
             </div>
+            {errors.title && <div className="error-message">{errors.title}</div>}
             {voiceStatus === 'listening' && (
               <div className="voice-status listening">Listening...</div>
             )}
@@ -152,10 +244,12 @@ function NewTaskSheet({ selectedDate, editingTask, onSave, onCancel }: NewTaskSh
             <input
               id="date"
               type="date"
-              className="date-input"
+              className={`date-input ${errors.date ? 'error' : ''}`}
               value={formData.date}
-              onChange={e => setFormData({ ...formData, date: e.target.value })}
+              min={new Date().toISOString().split('T')[0]}
+              onChange={e => updateFormData({ date: e.target.value }, 'date')}
             />
+            {errors.date && <div className="error-message">{errors.date}</div>}
           </div>
 
           {/* Completion Time Goal */}
@@ -164,11 +258,12 @@ function NewTaskSheet({ selectedDate, editingTask, onSave, onCancel }: NewTaskSh
             <input
               id="time"
               type="text"
-              className="text-input"
+              className={`text-input ${errors.completionTimeGoal ? 'error' : ''}`}
               placeholder="7:00 PM"
               value={formData.completionTimeGoal}
-              onChange={e => setFormData({ ...formData, completionTimeGoal: e.target.value })}
+              onChange={e => updateFormData({ completionTimeGoal: e.target.value }, 'completionTimeGoal')}
             />
+            {errors.completionTimeGoal && <div className="error-message">{errors.completionTimeGoal}</div>}
           </div>
 
           {/* Repeat (Weekly) */}
@@ -208,12 +303,16 @@ function NewTaskSheet({ selectedDate, editingTask, onSave, onCancel }: NewTaskSh
                   key={category}
                   type="button"
                   className={`category-chip ${formData.categoryTags.includes(category) ? 'selected' : ''}`}
-                  onClick={() => toggleCategory(category)}
+                  onClick={() => {
+                    toggleCategory(category);
+                    setErrors({ ...errors, categoryTags: undefined });
+                  }}
                 >
                   {category}
                 </button>
               ))}
             </div>
+            {errors.categoryTags && <div className="error-message">{errors.categoryTags}</div>}
           </div>
 
           {/* Location */}
@@ -235,11 +334,12 @@ function NewTaskSheet({ selectedDate, editingTask, onSave, onCancel }: NewTaskSh
             <input
               id="url"
               type="text"
-              className="text-input"
+              className={`text-input ${errors.url ? 'error' : ''}`}
               placeholder="https://..."
               value={formData.url}
-              onChange={e => setFormData({ ...formData, url: e.target.value })}
+              onChange={e => updateFormData({ url: e.target.value }, 'url')}
             />
+            {errors.url && <div className="error-message">{errors.url}</div>}
           </div>
 
           {/* Description / Notes */}

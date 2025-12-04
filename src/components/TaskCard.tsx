@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Task } from '../types';
 import DayOfWeekChips from './DayOfWeekChips';
+import NotificationPreview from './NotificationPreview';
 
 interface TaskCardProps {
   task: Task;
@@ -13,6 +14,7 @@ interface TaskCardProps {
 
 function TaskCard({ task, isHighlighted, onToggleComplete, onEdit, onDelete }: TaskCardProps) {
   const [showDetails, setShowDetails] = useState(false);
+  const [showNotificationPreview, setShowNotificationPreview] = useState(false);
 
   const monthlyPatternText = task.monthlyPattern === 'LAST_DAY'
     ? 'Last day of month'
@@ -39,6 +41,9 @@ function TaskCard({ task, isHighlighted, onToggleComplete, onEdit, onDelete }: T
               </svg>
             )}
           </div>
+          <span className="checkbox-label-text">
+            {task.isComplete ? 'Done' : 'Complete'}
+          </span>
         </button>
 
         <div className="task-content">
@@ -130,6 +135,13 @@ function TaskCard({ task, isHighlighted, onToggleComplete, onEdit, onDelete }: T
 
           <div className="task-actions">
             <button
+              className="action-button preview-button"
+              onClick={() => setShowNotificationPreview(true)}
+              aria-label="Preview notifications"
+            >
+              🔔 Preview
+            </button>
+            <button
               className="action-button edit-button"
               onClick={() => onEdit(task)}
               aria-label="Edit task"
@@ -146,6 +158,13 @@ function TaskCard({ task, isHighlighted, onToggleComplete, onEdit, onDelete }: T
           </div>
         </div>
       </div>
+
+      {showNotificationPreview && (
+        <NotificationPreview
+          task={task}
+          onClose={() => setShowNotificationPreview(false)}
+        />
+      )}
     </div>
   );
 }

@@ -1,8 +1,8 @@
 // src/data.ts
 import { Task } from './types';
 
-// Today is Sunday, Nov 16, 2025
-export const TODAY_DATE = '2025-11-16';
+// Get today's date in YYYY-MM-DD format
+export const TODAY_DATE = new Date().toISOString().split('T')[0];
 
 export const initialTasks: Task[] = [
   {
@@ -62,7 +62,11 @@ export const initialTasks: Task[] = [
   {
     id: '5',
     title: 'Monthly budget review',
-    date: '2025-11-22', // Next Saturday
+    date: (() => {
+      const date = new Date(TODAY_DATE);
+      date.setDate(date.getDate() + 6);
+      return date.toISOString().split('T')[0];
+    })(),
     completionTimeGoal: '2:00 PM',
     repeatDays: [],
     monthlyPattern: 'THIRD_SATURDAY',
